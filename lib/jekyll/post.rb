@@ -8,10 +8,10 @@ module Jekyll
       attr_accessor :lsi
     end
 
-    MATCHER = /^(.+\/)*(\d+-\d+-\d+)-(.*)(\.[^.]+)$/
+    MATCHER = /^(.+\/)*([0-9]+)-(.*)(\.[^.]+)$/
 
     # Post name validator. Post filenames must be like:
-    #   2008-11-05-my-awesome-post.textile
+    #   5-my-awesome-post.textile
     #
     # Returns <Bool>
     def self.valid?(name)
@@ -20,7 +20,7 @@ module Jekyll
 
     attr_accessor :site
     attr_accessor :data, :content, :output, :ext
-    attr_accessor :date, :slug, :published, :tags, :categories
+    attr_accessor :date, :slug, :published, :tags, :categories, :slide
 
     attr_reader :name
 
@@ -39,6 +39,10 @@ module Jekyll
       self.categories = dir.split('/').reject { |x| x.empty? }
       self.process(name)
       self.read_yaml(@base, name)
+
+      if self.data.has_key?('slide')
+        self.slide = self.data["slide"].to_i
+      end
 
       #If we've added a date and time to the yaml, use that instead of the filename date
       #Means we'll sort correctly.
@@ -64,7 +68,7 @@ module Jekyll
     #
     # Returns -1, 0, 1
     def <=>(other)
-      cmp = self.date <=> other.date
+      cmp = self.slide <=> other.slide
       if 0 == cmp
        cmp = self.slug <=> other.slug
       end
@@ -76,8 +80,9 @@ module Jekyll
     #
     # Returns nothing
     def process(name)
-      m, cats, date, slug, ext = *name.match(MATCHER)
-      self.date = Time.parse(date)
+      m, cats, slide, slug, ext = *name.match(MATCHER)
+      self.slide = slide
+      self.date = Time.now - ((1000 - slide)*10)
       self.slug = slug
       self.ext = ext
     rescue ArgumentError

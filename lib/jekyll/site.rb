@@ -156,7 +156,7 @@ module Jekyll
     #
     # Returns nothing.
     def read_posts(dir)
-      base = File.join(self.source, dir, '_posts')
+      base = File.join(self.source, dir, '_slides')
       return unless File.exists?(base)
       entries = Dir.chdir(base) { filter_entries(Dir['**/*']) }
 
